@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apex Proxy</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0f0f0f;
+      color: #eee;
+      margin: 0;
+      padding: 2rem;
+    }
+    input, button {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      background: #222;
+      color: #eee;
+    }
+    button:hover {
+      background: #333;
+      cursor: pointer;
+    }
+    #proxyForm {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    #content {
+      background: #181818;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛡 Apex Proxy</h1>
+  <form id="proxyForm">
+    <input type="text" id="urlInput" placeholder="https://example.com" required />
+    <button type="submit">Go</button>
+  </form>
+
+  <div id="content">Enter a site URL above to begin proxying.</div>
+
+  <script>
+    const form = document.getElementById('proxyForm')
+    const input = document.getElementById('urlInput')
+    const content = document.getElementById('content')
+    const proxyBase = 'https://apex.uraverageopdoge.workers.dev?url='
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const url = input.value.trim()
+      if (!url.startsWith('http')) {
+        alert('Please enter a full URL including http or https.')
+        return
+      }
+
+      content.innerHTML = '⏳ Loading...'
+
+      try {
+        const res = await fetch(proxyBase + encodeURIComponent(url))
+        const html = await res.text()
+        content.innerHTML = html
+        window.history.pushState({}, '', '?site=' + encodeURIComponent(url))
+      } catch (err) {
+        content.innerHTML = `<p style="color:red">❌ Error: ${err.message}</p>`
+      }
+    })
+
+    // Support ?site= preloading
+    const params = new URLSearchParams(location.search)
+    if (params.has('site')) {
+      input.value = params.get('site')
+      form.dispatchEvent(new Event('submit'))
+    }
+  </script>
+</body>
+</html>
